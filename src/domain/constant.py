@@ -1,0 +1,7 @@
+LOOKUP = "$lookup"
+ADDFIELDS = "$addFields"
+ARRAYELEMAT = "$arrayElemAt"
+PROJECT = "$project"
+SORT = "$sort"
+UNSET = "$unset"
+MATCH = "$match"

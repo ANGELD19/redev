@@ -1,0 +1,75 @@
+---
+trigger:
+  branches:
+    include:
+      - develop
+resources:
+  - repo: self
+variables:
+  - group: PipelineVarsDEV
+stages:
+  - stage: CI
+    displayName: "Continuos Integration"
+    jobs:
+      - job: CI
+        displayName: "Continuos Integration Job"
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: replacetokens@6
+            displayName: "Replace Vars ENV"
+            inputs:
+              root: "$(System.DefaultWorkingDirectory)"
+              sources: ".env.test"
+              tokenPattern: "azpipelines"
+          - script: |
+              sudo mv .env.test .env
+              cat .env
+            displayName: "File Change Name"
+          - script: |
+              chmod +x load_env.sh
+              ./load_env.sh
+            displayName: "Load variables"
+          - script: |
+              sudo apt install cloc -y
+            displayName: "Instalation Cloc"
+          - script: |
+              cloc . --exclude-lang=Markdown,XML --exclude-ext=txt,yml --out=$(Agent.TempDirectory)/LOC/ReportLOC.txt
+            displayName: "Generate Report Cloc"
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Report Cloc"
+            inputs:
+              PathtoPublish: "$(Agent.TempDirectory)/LOC/ReportLOC.txt"
+              ArtifactName: "ReportLOC"
+              publishLocation: "Container"
+          - script: |
+              python -m pip install -r requirements.txt
+            displayName: "Install Dependencies"
+          # - script: |
+          #     pytest ./tests --ignore=tests --ignore=src/main.py --doctest-modules --junitxml=./test-results.xml --cov=. --cov-report=xml
+          #   condition: eq(variables['Exec_unitTest'], 'true')
+          #   displayName: 'Unit Test'
+          - task: PublishCodeCoverageResults@2
+            displayName: "Publish Unit Test Coverage Result"
+            condition: eq(variables['Exec_unitTest'], 'true')
+            inputs:
+              summaryFileLocation: "$(System.DefaultWorkingDirectory)/**/coverage.xml"
+          - task: dependency-check-build-task@6
+            displayName: "OWASP Dependency Check Analysis"
+            condition: eq(variables['Exec_OWASP'], 'true')
+            inputs:
+              projectName: "Recruit Master"
+              scanPath: "$(System.DefaultWorkingDirectory)"
+              format: "HTML, JSON, JUNIT"
+              uploadReports: true
+              reportsDirectory: "$(Agent.TempDirectory)/dependecy-check/"
+              enableExperimental: true
+              additionalArguments: "--nvdApiDelay 16000"
+              nvdApiKey: "$(nvdApiKey)"
+          - task: PublishTestResults@2
+            condition: eq(variables['Exec_OWASP'], 'true')
+            displayName: "Publish OWASP Dependency Check Results"
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "$(Agent.TempDirectory)/dependecy-check/*junit.xml"
+              testRunTitle: "Dependency Check Results"

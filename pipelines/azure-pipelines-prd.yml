@@ -1,0 +1,38 @@
+---
+trigger:
+  branches:
+    include:
+      - production
+resources:
+  - repo: self
+variables:
+  - group: PipelineVarsPRD
+stages:
+  - stage: CI
+    displayName: "Continuos Deploy PRD"
+    jobs:
+      - job: CI
+        displayName: "Continuos Deploy PRD Job"
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: Docker@2
+            displayName: "Build Docker"
+            inputs:
+              repository: "$(AWS_Container_Repository)"
+              command: "build"
+              Dockerfile: "**/Dockerfile"
+              tags: "$(tagBilling)"
+          - script: |
+              docker images
+            displayName: "Docker images"
+          - task: ECRPushImage@1
+            displayName: "Push Image AWS"
+            inputs:
+              awsCredentials: "AWS-SC-recruitMasterUser"
+              regionName: "us-east-1"
+              imageSource: "imagename"
+              sourceImageName: "$(AWS_Container_Repository)"
+              sourceImageTag: "$(tagBilling)"
+              repositoryName: "$(AWS_Container_Repository)"
+              pushTag: "$(tagBilling)"
