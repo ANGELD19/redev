@@ -22,7 +22,7 @@ from src.infrastructure.repositories.mongodb.process_status_repository import Pr
 from src.infrastructure.repositories.mongodb.country_repository import CountryRepository
 from src.infrastructure.repositories.mongodb.company_repository import CompanyRepository
 from src.infrastructure.repositories.mongodb.ship_repository import ShipRepository
-from src.infrastructure.repositories.mongodb.position_repository import PositionRepository
+from src.infrastructure.repositories.mongodb.user_repository import PositionRepository
 from src.infrastructure.repositories.mongodb.users_repository import UsersRepository
 from src.infrastructure.services.send_messages import SendMessages
 

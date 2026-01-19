@@ -2,10 +2,10 @@ import os
 from src.infrastructure.repositories.mongodb.mongodb_repository import MongodbRepository
 
 
-COLLECTION_NAME = "invoiceStatus"
+COLLECTION_NAME = "users"
 
 
-class InvoiceStatusRepository(MongodbRepository):
+class UserRepository(MongodbRepository):
     def __init__(self):
         user = os.getenv("MONGO_DATABASE_USERNAME")
         password = os.getenv("MONGO_DATABASE_PASSWORD")
