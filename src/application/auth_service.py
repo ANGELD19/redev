@@ -16,7 +16,7 @@ from src.infrastructure.repositories.mongodb.log_repository import LogRepository
 from src.infrastructure.repositories.mongodb.user_repository import UserRepository
 from src.domain.auth_schema import (
     LoginSchema,
-    ResetPasswordSchema
+    
 )
 
 from src.infrastructure.utils.handler_error import (
@@ -39,9 +39,9 @@ class Auth:
         self.app = app              #(self) es un parametro obligatorio y es una referencia al objeto actual que se esta usando
                                     #app es la instacia de flask              
     def login(self):
-        origen = "login"
+        origen = "login"            #origen =: nos va a indicar en caso de que se presente un error saber en que parte la presenta
         try: 
-            data = request.get_json
+            data = request.get_json()
             schema = LoginSchema()
             schema.load(data)
 
@@ -49,7 +49,7 @@ class Auth:
 
             if not user : 
                 return handle_client_error("Usuario no encontrado", origen, 404)
-            if not user.get("is_active") == True:
+            if not user.get("is_active", False):
                 return handle_client_error("Usuario inactivo", origen, 404)
             if not bcrypt.check_password_hash(user.get("password"), data.get("password")):
                 return handle_client_error("Contrasena incorrecta", origen, 401)
